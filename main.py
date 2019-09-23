@@ -2,60 +2,73 @@
 
 import pytesseract, json, datetime,time, pickle, os
 from PIL import Image
+# Wskazanie lokalizacji zainstalowanego tesseraktu (od google)
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe"
 
-#Aktualizowanie rankingu dla wybranych nickow z tekstu (wygenerowanego np ze zrzutu ekranu za pomoca pytesseract)
+# Predefiniowana lista nick車w kt車re maj? by? dost?pne w rankingu
 l_nick = ["Herman", "Pawel", "Stanislaw", "Dariusz", "Tomasz", "Matgosia", "oj,", "Janusz", "Ragnar", "marjac"]
 l_ranking = [[]]
 
-#inicjalizacja listy recznie
+#inicjalizacja listy nick車w recznie (dodanie pocz?tkowych slot車w(? xD) )
 for i,nick in enumerate(l_nick):
     l_ranking.append([])
     l_ranking[i].append(nick)
     l_ranking[i].append([])
-# Pozycja wedlug indeksu zdeterminowana jest kolejnoscia wystapien nicka w liscie l_nick.
-# Pobieranie z teksu pozycji nicka i wyszukiwanie ilosci punktow
-# Pobranie url do zdj?cia
+
 # OCR na zdj?ciu i zwr車cenie tekstu
 def getTextFromImage(imgUrl):
     image = Image.open(imgUrl)
+    # Wykorzystanie biblioteki tesseract w celu ekstakcji s?車w, znakow ze screena
     text = pytesseract.image_to_string(image)
     text_podzielony = text.split()
     zaktualizuj_liste_dodanych_screenow(imgUrl)
     return text_podzielony
+
 # Przekonwertowanie tekstu na dane punktow i nick車w, nastepnie dodanie do listy
 def updateRanking(text):
-    for i,elem in enumerate(text):
+    # Pozycja wedlug indeksu zdeterminowana jest kolejnoscia wystapien nicka w liscie l_nick.
+    # Wypelnianie listy nickow nie znajduj?cych sie w bierz?cym tekscie pustymi wyrazami
+    for i, item in enumerate(l_nick):
+        if item not in text:
+            l_ranking[i][1] += [""]
+    # Iteracja po elementach tekstu pozyskanego ze zdj?cia
+    for i, elem in enumerate(text):
         punkty = 0
+        # Sprawdzenie czy wybrany wyraz jest nickiem z listy,
+        #   je?eli tak, w車wczas sprawdzany jest nast?pny element i kolejny pod kontem poprawno?ci/
+        #   dopasowania do punktacjiw rankingu, (s?owa, znaki i liczby poni?ej 1k pkt s? eliminowane)
         if elem in l_nick:
-            nick_index=l_nick.index(elem)
-            if(str.isdigit(text[i+1])):
-                if int(text[i+1]) > 1000:
-                    punkty = text[i+1]
-                elif(str.isdigit(text[i+2])):
-                    if int(text[i+2])> 1000:
-                        punkty = text[i+2]
+            nick_index = l_nick.index(elem)
+            if (str.isdigit(text[i + 1])):
+                if int(text[i + 1]) > 1000:
+                    punkty = text[i + 1]
+                elif (str.isdigit(text[i + 2])):
+                    if int(text[i + 2]) > 1000:
+                        punkty = text[i + 2]
             else:
-                if str.isdigit(text[i+2]):
-                    if int(text[i+2])> 1000:
-                        punkty = text[i+2]
+                if str.isdigit(text[i + 2]):
+                    if int(text[i + 2]) > 1000:
+                        punkty = text[i + 2]
             l_ranking[nick_index][1] += [punkty]
-    print("Ranking zostal pomyslnie zaktualizowany")
+    # Przekazanie rankingu w celu jego aktualizacji
     zaktualizuj_plik_rankinu(l_ranking)
-    print("file updated succesfully")
+    print("Ranking zostal pomyslnie zaktualizowany")
 
+# Aktualizowanie pliku 'Ranking_data' o dane rankingu
 def zaktualizuj_plik_rankinu(ranking_data):
     with open("Ranking_data", "wb") as fp:  # Pickling
         pickle.dump(ranking_data, fp)
     print("Plik rankingu zosta? zaktualizowany.")
 
+# Zwraca aktualny ranking pobranych z pliku 'Ranking_data'
 def zaladuj_dane_rankungu_z_pliku():
     with open("Ranking_data", "rb") as fp:  # Unpickling
         ranking = pickle.load(fp)
     print("Pomy?lnie zosta?y za?adowane dane rankingu.")
     return ranking
 
-def pobierz_liste_dodanych_screenow(): # Zwraca list? wykorzystzanych screenow
+# Zwraca list? wszystkich wcze?niej wykorzystzanych screenow, pobieranych z pliku 'Screens_used'
+def pobierz_liste_dodanych_screenow():
     lista = []
     with open("Screens_used", "r") as fp:
         line = fp.readline()
@@ -64,12 +77,14 @@ def pobierz_liste_dodanych_screenow(): # Zwraca list? wykorzystzanych screenow
             line = fp.readline()
     return lista
 
+# Dodawanie do pliku 'Screens_used' nazw screen車w kt車re zosta?y ju? przetworzone
 def zaktualizuj_liste_dodanych_screenow(img):
     text_file = open("Screens_used", "a+")
     text_file.write(f"{img[8:]}\t{datetime.datetime.now()}\n")
     text_file.close()
     print("Lista dodanych screenow, zostala pomyslnie zaktualizowana.")
 
+# PRzeszukanie katalogu Screens pod k?tem nowych element車w
 def sprawdz_nowe_screeny():
     nowe_lista = []
     lista = pobierz_liste_dodanych_screenow()
@@ -79,37 +94,37 @@ def sprawdz_nowe_screeny():
             nowe_lista += [all_screens]
     return nowe_lista
 
-
+# Sprawdzenie kt車re screeny zosta?y ju? wcze?niej zaimportowane
 if pobierz_liste_dodanych_screenow() != []:
+    # Pobranie do pami?ci aktualnych danych z pliku
     l_ranking = zaladuj_dane_rankungu_z_pliku()
 
+# Sprawdzenie, czy zosta?y dodane nowe screeny
 if not sprawdz_nowe_screeny:
     count_new_screens = 0
 else:
     count_new_screens = len(sprawdz_nowe_screeny())
 
+# Proces aktualizowania rankingu o nowe screeny, z prostym wskaznikiem post?pu
 for i,imgUrl in enumerate(sprawdz_nowe_screeny()):
     print(f"[ PROGRESS : {i}/{count_new_screens} ]")
-    print(getTextFromImage(f"Screens/{imgUrl}"))
+    #print(getTextFromImage(f"Screens/{imgUrl}"))
     updateRanking(getTextFromImage(f"Screens/{imgUrl}"))
+    i = 0
+    # Dla cel車w testowych - wy?wietlanie bierz?cego rankingu co iteracje
+    while i < len(l_ranking):
+        print(l_ranking[i])
+        i += 1
 
+# Wy?wietlenie ca??go rankingu dla wszystkich elementow(nick車w)
 i = 0
 while i < len(l_ranking):
     print(l_ranking[i])
     i += 1
 
-#TODO: W przypadku nie znalezienia gracza w miejscu rankingu bedzie puste pole [ - ]
-
 #TODO: Automatyczne przeszukiwanie kolejnych pozycjii w celu znalezienia liczby punktow,
-#   opcja w przypadku gdy jakis nick jest kilkucz?onowy
+#   opcja w przypadku gdy jakis nick jest kilkucz?onowy ~ < Wyszukiwanie max 2 pozycjii => do aktualiacjii >
 
-#TODO: Jakie? wykresy by si? te? przyda?y xD
+#TODO: Jakie? wykresy by si? te? przyda?y xD ~ < Nied?ugo >
 
-#TODO: Przegl?danie katalogu i automatyczne przenoszenie pliku jpg do folderu aplikacji,
-#
-
-#TODO: Wyodr?bnienie nazw u?ytkownik車w i sprawdzanie czy na li?cie pojawi? si? jaki? nowy gracz (?)
-#   sk?d program ma wiedzie? ?e to nowy gracz ?... !! je?eli liczba dopasowa里 b?dzie mniejsza ni? zak?ada to p?tla na pocz?tku,
-#   w車wczas poprosi nas o wprowadzenie nazwy u?ytkownika kt車y si? pojawi? ...
-#   problemem tutaj jest fakt, ?e OCR nie zawsze poprawnie zczytuje nicki,
-#   r?czna weryfikacja b?dzie neizb?dna, ale mo?e uda si? to zautomatyzowa? albo Wizard nas poprowadzi xD
+#TODO: Przegl?danie katalogu i automatyczne przenoszenie pliku jpg do folderu aplikacji, ~ < In progress, przerzucenie screenow z dokument車w do katalogu aplikacjii >
