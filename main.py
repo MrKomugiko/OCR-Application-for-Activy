@@ -5,7 +5,7 @@ from PIL import Image
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe"
 
 #Aktualizowanie rankingu dla wybranych nickow z tekstu (wygenerowanego np ze zrzutu ekranu za pomoca pytesseract)
-l_nick = ["Herman", "Pawel", "Stanislaw", "Dariusz", "Tomasz", "Matgosia", "oj,", "Janusz", "Ragnar"]
+l_nick = ["Herman", "Pawel", "Stanislaw", "Dariusz", "Tomasz", "Matgosia", "oj,", "Janusz", "Ragnar", "marjac"]
 l_ranking = [[]]
 
 #inicjalizacja listy recznie
@@ -79,16 +79,19 @@ def sprawdz_nowe_screeny():
             nowe_lista += [all_screens]
     return nowe_lista
 
-if sprawdz_nowe_screeny == []:
+
+if pobierz_liste_dodanych_screenow() != []:
+    l_ranking = zaladuj_dane_rankungu_z_pliku()
+
+if not sprawdz_nowe_screeny:
     count_new_screens = 0
 else:
     count_new_screens = len(sprawdz_nowe_screeny())
 
 for i,imgUrl in enumerate(sprawdz_nowe_screeny()):
     print(f"[ PROGRESS : {i}/{count_new_screens} ]")
+    print(getTextFromImage(f"Screens/{imgUrl}"))
     updateRanking(getTextFromImage(f"Screens/{imgUrl}"))
-
-l_ranking = zaladuj_dane_rankungu_z_pliku()
 
 i = 0
 while i < len(l_ranking):
@@ -100,24 +103,13 @@ while i < len(l_ranking):
 #TODO: Automatyczne przeszukiwanie kolejnych pozycjii w celu znalezienia liczby punktow,
 #   opcja w przypadku gdy jakis nick jest kilkucz?onowy
 
-#TODO: W przypadkuvnie znalezienia gracza w miejscu rankingu bedzie puste pole [ - ]
-
-#TODO: Automatyczne przeszukiwanie kolejnych pozycjii w celu znalezienia liczby punktow,
-#   opcja w przypadku gdy jakis nick jest kilkucz?onowy
-
-#TODO: Zapisywanie i odczytywanie danych do pliku tekstowego w formacie json(?).
-
 #TODO: Jakie? wykresy by si? te? przyda?y xD
 
 #TODO: Przegl?danie katalogu i automatyczne przenoszenie pliku jpg do folderu aplikacji,
-#   lista wcze?niej zainmportowanych screen車w, i aktualizowanie tylko o nowe (?)
+#
 
 #TODO: Wyodr?bnienie nazw u?ytkownik車w i sprawdzanie czy na li?cie pojawi? si? jaki? nowy gracz (?)
 #   sk?d program ma wiedzie? ?e to nowy gracz ?... !! je?eli liczba dopasowa里 b?dzie mniejsza ni? zak?ada to p?tla na pocz?tku,
 #   w車wczas poprosi nas o wprowadzenie nazwy u?ytkownika kt車y si? pojawi? ...
 #   problemem tutaj jest fakt, ?e OCR nie zawsze poprawnie zczytuje nicki,
 #   r?czna weryfikacja b?dzie neizb?dna, ale mo?e uda si? to zautomatyzowa? albo Wizard nas poprowadzi xD
-
-#TODO: Ogarn?? w jaki spos車b aktualizowa? list? w przypadku gdy w rankingu pojawi si? nowy gracz,
-#   tak ?eby doda? go na samym dole wprowadzi? jego nick bo wcze?niej nie istnia?, problemem jest tutaj
-#   sam fakt, ?e nazwy u?ytkownik車w zosta?y wpisane r?cznie
