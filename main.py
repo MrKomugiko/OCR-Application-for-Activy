@@ -6,7 +6,7 @@ from PIL import Image
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe"
 
 # Predefiniowana lista nick車w kt車re maj? by? dost?pne w rankingu
-l_nick = ["Herman", "Pawel", "Stanislaw", "Dariusz", "Tomasz", "Matgosia", "oj,", "Janusz", "Ragnar", "marjac"]
+l_nick = ["Herman", "Pawel", "Stanislaw", "Dariusz", "Tomasz", "Matgosia", "A_Jak", "Janusz", "Ragnar", "marjac"]
 l_ranking = [[]]
 
 #inicjalizacja listy nick車w recznie (dodanie pocz?tkowych slot車w(? xD) )
@@ -29,7 +29,7 @@ def updateRanking(text):
     # Pozycja wedlug indeksu zdeterminowana jest kolejnoscia wystapien nicka w liscie l_nick.
     # Wypelnianie listy nickow nie znajduj?cych sie w bierz?cym tekscie pustymi wyrazami
     for i, item in enumerate(l_nick):
-        if item not in text:
+        if item not in text and item != "A_Jak":
             l_ranking[i][1] += [""]
     # Iteracja po elementach tekstu pozyskanego ze zdj?cia
     for i, elem in enumerate(text):
@@ -37,6 +37,8 @@ def updateRanking(text):
         # Sprawdzenie czy wybrany wyraz jest nickiem z listy,
         #   je?eli tak, w車wczas sprawdzany jest nast?pny element i kolejny pod kontem poprawno?ci/
         #   dopasowania do punktacjiw rankingu, (s?owa, znaki i liczby poni?ej 1k pkt s? eliminowane)
+        if elem=="oj," or elem == "Aiak":
+            elem = "A_Jak"
         if elem in l_nick:
             nick_index = l_nick.index(elem)
             if (str.isdigit(text[i + 1])):
@@ -94,6 +96,13 @@ def sprawdz_nowe_screeny():
             nowe_lista += [all_screens]
     return nowe_lista
 
+# Wy?wietlenie ca??go rankingu dla wszystkich elementow(nick車w)
+def pokaz_liste_ranking():
+    i = 0
+    while i < len(l_ranking):
+        print(l_ranking[i])
+        i += 1
+
 # Sprawdzenie kt車re screeny zosta?y ju? wcze?niej zaimportowane
 if pobierz_liste_dodanych_screenow() != []:
     # Pobranie do pami?ci aktualnych danych z pliku
@@ -116,15 +125,11 @@ for i,imgUrl in enumerate(sprawdz_nowe_screeny()):
         print(l_ranking[i])
         i += 1
 
-# Wy?wietlenie ca??go rankingu dla wszystkich elementow(nick車w)
-i = 0
-while i < len(l_ranking):
-    print(l_ranking[i])
-    i += 1
-
-#TODO: Automatyczne przeszukiwanie kolejnych pozycjii w celu znalezienia liczby punktow,
-#   opcja w przypadku gdy jakis nick jest kilkucz?onowy ~ < Wyszukiwanie max 2 pozycjii => do aktualiacjii >
-
-#TODO: Jakie? wykresy by si? te? przyda?y xD ~ < Nied?ugo >
-
-#TODO: Przegl?danie katalogu i automatyczne przenoszenie pliku jpg do folderu aplikacji, ~ < In progress, przerzucenie screenow z dokument車w do katalogu aplikacjii >
+# Wy?wietlanie rankingu z pliku => posortowane wed?ug pozycji 1-7
+print("")
+x = len(l_nick)
+for index,item in enumerate(l_nick):
+    print('{:>10}'.format(l_ranking[index][0]), end="")
+    for i,elem in enumerate(l_ranking[index][1]):
+        print('{:>5}'.format(l_ranking[index][1][i]),end="")
+    print("")
