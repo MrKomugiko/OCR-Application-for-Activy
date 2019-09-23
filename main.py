@@ -8,12 +8,17 @@ pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files (x86)\Tesseract-OCR\t
 # Predefiniowana lista nick車w kt車re maj? by? dost?pne w rankingu
 l_nick = ["Herman", "Pawel", "Stanislaw", "Dariusz", "Tomasz", "Matgosia", "A_Jak", "Janusz", "Ragnar", "marjac"]
 l_ranking = [[]]
+l_ranking_pozycja = [[]]
 
 #inicjalizacja listy nick車w recznie (dodanie pocz?tkowych slot車w(? xD) )
 for i,nick in enumerate(l_nick):
     l_ranking.append([])
     l_ranking[i].append(nick)
     l_ranking[i].append([])
+
+    l_ranking_pozycja.append([])
+    l_ranking_pozycja[i].append(nick)
+    l_ranking_pozycja[i].append([])
 
 # OCR na zdj?ciu i zwr車cenie tekstu
 def getTextFromImage(imgUrl):
@@ -31,9 +36,12 @@ def updateRanking(text):
     for i, item in enumerate(l_nick):
         if item not in text and item != "A_Jak":
             l_ranking[i][1] += [""]
+            l_ranking_pozycja[i][1] += [""]
     # Iteracja po elementach tekstu pozyskanego ze zdj?cia
+    pozycja = 1
     for i, elem in enumerate(text):
         punkty = 0
+
         # Sprawdzenie czy wybrany wyraz jest nickiem z listy,
         #   je?eli tak, w車wczas sprawdzany jest nast?pny element i kolejny pod kontem poprawno?ci/
         #   dopasowania do punktacjiw rankingu, (s?owa, znaki i liczby poni?ej 1k pkt s? eliminowane)
@@ -52,21 +60,23 @@ def updateRanking(text):
                     if int(text[i + 2]) > 1000:
                         punkty = text[i + 2]
             l_ranking[nick_index][1] += [punkty]
+            l_ranking_pozycja[nick_index][1] += [pozycja]
+            pozycja += 1
+
     # Przekazanie rankingu w celu jego aktualizacji
-    zaktualizuj_plik_rankinu(l_ranking)
+    zaktualizuj_plik("Ranking_data",l_ranking)
+    zaktualizuj_plik("Ranking_position_data", l_ranking_pozycja)
     print("Ranking zostal pomyslnie zaktualizowany")
 
 # Aktualizowanie pliku 'Ranking_data' o dane rankingu
-def zaktualizuj_plik_rankinu(ranking_data):
-    with open("Ranking_data", "wb") as fp:  # Pickling
+def zaktualizuj_plik(file_name, ranking_data):
+    with open(f"{file_name}", "wb") as fp:  # Pickling
         pickle.dump(ranking_data, fp)
-    print("Plik rankingu zosta? zaktualizowany.")
 
 # Zwraca aktualny ranking pobranych z pliku 'Ranking_data'
-def zaladuj_dane_rankungu_z_pliku():
-    with open("Ranking_data", "rb") as fp:  # Unpickling
+def zaladuj_dane_rankungu_z_pliku(file_name):
+    with open(f"{file_name}", "rb") as fp:  # Unpickling
         ranking = pickle.load(fp)
-    print("Pomy?lnie zosta?y za?adowane dane rankingu.")
     return ranking
 
 # Zwraca list? wszystkich wcze?niej wykorzystzanych screenow, pobieranych z pliku 'Screens_used'
@@ -84,7 +94,6 @@ def zaktualizuj_liste_dodanych_screenow(img):
     text_file = open("Screens_used", "a+")
     text_file.write(f"{img[8:]}\t{datetime.datetime.now()}\n")
     text_file.close()
-    print("Lista dodanych screenow, zostala pomyslnie zaktualizowana.")
 
 # PRzeszukanie katalogu Screens pod k?tem nowych element車w
 def sprawdz_nowe_screeny():
@@ -106,7 +115,8 @@ def pokaz_liste_ranking():
 # Sprawdzenie kt車re screeny zosta?y ju? wcze?niej zaimportowane
 if pobierz_liste_dodanych_screenow() != []:
     # Pobranie do pami?ci aktualnych danych z pliku
-    l_ranking = zaladuj_dane_rankungu_z_pliku()
+    l_ranking = zaladuj_dane_rankungu_z_pliku("Ranking_data")
+    l_ranking_pozycja = zaladuj_dane_rankungu_z_pliku("Ranking_position_data")
 
 # Sprawdzenie, czy zosta?y dodane nowe screeny
 if not sprawdz_nowe_screeny:
@@ -119,11 +129,13 @@ for i,imgUrl in enumerate(sprawdz_nowe_screeny()):
     print(f"[ PROGRESS : {i}/{count_new_screens} ]")
     #print(getTextFromImage(f"Screens/{imgUrl}"))
     updateRanking(getTextFromImage(f"Screens/{imgUrl}"))
+    '''
     i = 0
     # Dla cel車w testowych - wy?wietlanie bierz?cego rankingu co iteracje
     while i < len(l_ranking):
         print(l_ranking[i])
         i += 1
+    '''
 
 # Wy?wietlanie rankingu z pliku => posortowane wed?ug pozycji 1-7
 print("")
@@ -132,4 +144,29 @@ for index,item in enumerate(l_nick):
     print('{:>10}'.format(l_ranking[index][0]), end="")
     for i,elem in enumerate(l_ranking[index][1]):
         print('{:>5}'.format(l_ranking[index][1][i]),end="")
+    print("")
+
+print("")
+x = len(l_nick)
+for index,item in enumerate(l_nick):
+    print('{:>10}'.format(l_ranking_pozycja[index][0]), end="")
+    for i,elem in enumerate(l_ranking_pozycja[index][1]):
+        print('{:^5}'.format(l_ranking_pozycja[index][1][i]),end="")
+    print("")
+
+print("")
+
+
+x = len(l_nick)
+for index,item in enumerate(l_nick):
+    print('{:}'.format(l_ranking[index][0]), end=" ")
+    for i,elem in enumerate(l_ranking[index][1]):
+        print('{:}'.format(l_ranking[index][1][i]),end=" ")
+    print("")
+
+x = len(l_nick)
+for index,item in enumerate(l_nick):
+    print('{:}'.format(l_ranking_pozycja[index][0]), end=" ")
+    for i,elem in enumerate(l_ranking_pozycja[index][1]):
+        print('{:}'.format(l_ranking_pozycja[index][1][i]),end=" ")
     print("")
