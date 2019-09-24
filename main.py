@@ -1,6 +1,6 @@
 #coding=gbk
 
-import pytesseract, json, datetime,time, pickle, os
+import pytesseract, json, datetime,time, pickle, os, shutil
 from PIL import Image
 # Wskazanie lokalizacji zainstalowanego tesseraktu (od google)
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe"
@@ -45,7 +45,7 @@ def updateRanking(text):
         # Sprawdzenie czy wybrany wyraz jest nickiem z listy,
         #   je?eli tak, wówczas sprawdzany jest nast?pny element i kolejny pod kontem poprawno?ci/
         #   dopasowania do punktacjiw rankingu, (s?owa, znaki i liczby poni?ej 1k pkt s? eliminowane)
-        if elem=="oj," or elem == "Aiak":
+        if elem=="oj," or elem == "Aiak" or elem=="Ajak":
             elem = "A_Jak"
         if elem in l_nick:
             nick_index = l_nick.index(elem)
@@ -112,6 +112,68 @@ def pokaz_liste_ranking():
         print(l_ranking[i])
         i += 1
 
+# Przeszukiwanie folderu Dokumenty (domyslego katalogu na ktory importowane s? screeny) \
+#   w celu znalezienia nowych elementow nie zaimportowanych do aplikacji,
+#   zostaj? one przeniesione do katalogu screens
+def sprawdz_i_przenies_nowe_screeny():
+    source = os.listdir("C:\\Users\MrKom\Documents")
+    destination = "Screens"
+    counter = 0
+    for files in source:
+        if files.endswith(".jpg") and files not in pobierz_liste_dodanych_screenow():
+            shutil.move(f"C:\\Users\MrKom\Documents\{files}",destination)
+            counter +=1
+    if counter == 0:
+        print("Brak nowych elementow.")
+    else:
+        print(f"Zostaly dodane {counter} nowe screeny.")
+
+def TEST_SHOW_RANKINGS(type=""):
+
+   if type=="clearRead":
+        # Wy?wietlanie rankingu z pliku => posortowane wed?ug pozycji 1-7
+        print("")
+        x = len(l_nick)
+        for index,item in enumerate(l_nick):
+            print('{:.>10}'.format(l_ranking[index][0]), end="")
+            for i,elem in enumerate(l_ranking[index][1]):
+                print('{:>5}'.format(l_ranking[index][1][i]),end="")
+            print("")
+
+        print("")
+        x = len(l_nick)
+        for index,item in enumerate(l_nick):
+            print('{:.>10}'.format(l_ranking_pozycja[index][0]), end="")
+            for i,elem in enumerate(l_ranking_pozycja[index][1]):
+                print('{:^2}'.format(l_ranking_pozycja[index][1][i]),end="")
+            print("")
+
+   elif type=="copyReady":
+        x = len(l_nick)
+        for index,item in enumerate(l_nick):
+            print('{:}'.format(l_ranking[index][0]), end=" ")
+            for i,elem in enumerate(l_ranking[index][1]):
+                print('{:}'.format(l_ranking[index][1][i]),end=" ")
+            print("")
+
+        print("")
+
+        x = len(l_nick)
+        for index,item in enumerate(l_nick):
+            print('{:}'.format(l_ranking_pozycja[index][0]), end=" ")
+            for i,elem in enumerate(l_ranking_pozycja[index][1]):
+                print('{:}'.format(l_ranking_pozycja[index][1][i]),end=" ")
+            print("")
+
+   else:
+       print("jako parametr podaj <clearRead> jako lanie sformatowane i przejrzyste,\nalbo <copyReady> elementy oddzielone spacjami, \nwystarczy wklejenie specjalne do excela z uwzglednieniem spacjii")
+
+
+#TODO: Kopia zapasowa przed wgraniem nowych screenów, w celu skorygowania b??dów i przywrócenia wczesniejszej wersjii
+
+
+sprawdz_i_przenies_nowe_screeny()
+
 # Sprawdzenie które screeny zosta?y ju? wcze?niej zaimportowane
 if pobierz_liste_dodanych_screenow() != []:
     # Pobranie do pami?ci aktualnych danych z pliku
@@ -129,44 +191,9 @@ for i,imgUrl in enumerate(sprawdz_nowe_screeny()):
     print(f"[ PROGRESS : {i}/{count_new_screens} ]")
     #print(getTextFromImage(f"Screens/{imgUrl}"))
     updateRanking(getTextFromImage(f"Screens/{imgUrl}"))
-    '''
-    i = 0
-    # Dla celów testowych - wy?wietlanie bierz?cego rankingu co iteracje
-    while i < len(l_ranking):
-        print(l_ranking[i])
-        i += 1
-    '''
 
-# Wy?wietlanie rankingu z pliku => posortowane wed?ug pozycji 1-7
-print("")
-x = len(l_nick)
-for index,item in enumerate(l_nick):
-    print('{:>10}'.format(l_ranking[index][0]), end="")
-    for i,elem in enumerate(l_ranking[index][1]):
-        print('{:>5}'.format(l_ranking[index][1][i]),end="")
-    print("")
-
-print("")
-x = len(l_nick)
-for index,item in enumerate(l_nick):
-    print('{:>10}'.format(l_ranking_pozycja[index][0]), end="")
-    for i,elem in enumerate(l_ranking_pozycja[index][1]):
-        print('{:^5}'.format(l_ranking_pozycja[index][1][i]),end="")
-    print("")
-
-print("")
+TEST_SHOW_RANKINGS("clearRead")
 
 
-x = len(l_nick)
-for index,item in enumerate(l_nick):
-    print('{:}'.format(l_ranking[index][0]), end=" ")
-    for i,elem in enumerate(l_ranking[index][1]):
-        print('{:}'.format(l_ranking[index][1][i]),end=" ")
-    print("")
 
-x = len(l_nick)
-for index,item in enumerate(l_nick):
-    print('{:}'.format(l_ranking_pozycja[index][0]), end=" ")
-    for i,elem in enumerate(l_ranking_pozycja[index][1]):
-        print('{:}'.format(l_ranking_pozycja[index][1][i]),end=" ")
-    print("")
+
