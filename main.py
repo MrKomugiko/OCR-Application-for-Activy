@@ -1,4 +1,4 @@
-# coding=gbk
+# coding=utf-8
 
 import pytesseract, json, datetime, time, pickle, os, shutil
 from PIL import Image
@@ -6,13 +6,13 @@ from PIL import Image
 # Wskazanie lokalizacji zainstalowanego tesseraktu (od google)
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe"
 
-# Predefiniowana lista nicków które maj? by? dost?pne w rankingu
+# Predefiniowana lista nick贸w kt贸re maj? by? dost?pne w rankingu
 l_nick = ["Herman", "Pawel", "Stanislaw", "Dariusz", "Tomasz", "Matgosia", "A_Jak", "Janusz", "Ragnar", "marjac",
           "Slawomir", "HeRmAn"]
 l_ranking = [[]]
 l_ranking_pozycja = [[]]
 
-# inicjalizacja listy nicków recznie (dodanie pocz?tkowych slotów(? xD) )
+# inicjalizacja listy nick贸w recznie (dodanie pocz?tkowych slot贸w(? xD) )
 for i, nick in enumerate(l_nick):
     l_ranking.append([])
     l_ranking[i].append(nick)
@@ -22,10 +22,10 @@ for i, nick in enumerate(l_nick):
     l_ranking_pozycja[i].append(nick)
     l_ranking_pozycja[i].append([])
 
-# OCR na zdj?ciu i zwrócenie tekstu
+# OCR na zdj?ciu i zwr贸cenie tekstu
 def getTextFromImage(imgUrl):
     image = Image.open(imgUrl)
-    # Wykorzystanie biblioteki tesseract w celu ekstakcji s?ów, znakow ze screena
+    # Wykorzystanie biblioteki tesseract w celu ekstakcji s?贸w, znakow ze screena
     text = pytesseract.image_to_string(image)
     text_podzielony = text.split()
     zaktualizuj_liste_dodanych_screenow(imgUrl)
@@ -33,14 +33,14 @@ def getTextFromImage(imgUrl):
 
 
 def getTextFromFile(fileUrl):
-    with open(f"Screens_data\\{fileUrl}", "r") as text:
+    with open(f"Screens_data\\{fileUrl}", "r", encoding="utf-8") as text:
         line = text.read()
     text_podzielony = line.split()
     print(text_podzielony)
     return text_podzielony
 
 
-# Przekonwertowanie tekstu na dane punktow i nicków, nastepnie dodanie do listy
+# Przekonwertowanie tekstu na dane punktow i nick贸w, nastepnie dodanie do listy
 def updateRanking(text):
     # Pozycja wedlug indeksu zdeterminowana jest kolejnoscia wystapien nicka w liscie l_nick.
     # Wypelnianie listy nickow nie znajduj?cych sie w bierz?cym tekscie pustymi wyrazami
@@ -54,9 +54,9 @@ def updateRanking(text):
         punkty = 0
 
         # Sprawdzenie czy wybrany wyraz jest nickiem z listy,
-        #   je?eli tak, wówczas sprawdzany jest nast?pny element i kolejny pod kontem poprawno?ci/
+        #   je?eli tak, w贸wczas sprawdzany jest nast?pny element i kolejny pod kontem poprawno?ci/
         #   dopasowania do punktacjiw rankingu, (s?owa, znaki i liczby poni?ej 1k pkt s? eliminowane)
-        if elem == "oj," or elem == "Aiak" or elem == "Ajak" or elem == "Alsk":
+        if elem == "oj," or elem == "Aiak" or elem == "Ajak" or elem == "Alsk" or elem[:5] == "Rafat":
             elem = "A_Jak"
         if elem in l_nick:
             nick_index = l_nick.index(elem)
@@ -79,39 +79,9 @@ def updateRanking(text):
     zaktualizuj_plik("Ranking_position_data", l_ranking_pozycja)
 
 
-def updateRanking_TEST(text):
-    for i, item in enumerate(l_nick):
-        print(item)
-        item = "'" + item + "'"
-        if item not in text and item != "A_Jak":
-            l_ranking_TEST[i][1] += [""]
-            l_ranking_pozycja_TEST[i][1] += [""]
-    pozycja = 1
-    for i, elem in enumerate(text):
-        elem = elem[1:-2]
-        punkty = 0
-        if elem == "oj," or elem == "Aiak" or elem == "Ajak" or elem == "Alsk":
-            elem = "A_Jak"
-        if elem in l_nick:
-            nick_index = l_nick.index(elem)
-            if (str.isdigit(text[i + 1][1:-2])):
-                if int(text[i + 1][1:-2]) > 1000:
-                    punkty = text[i + 1][1:-2]
-                elif (str.isdigit(text[i + 2][1:-2])):
-                    if int(text[i + 2][1:-2]) > 1000:
-                        punkty = text[i + 2][1:-2]
-            else:
-                if str.isdigit(text[i + 2][1:-2]):
-                    if int(text[i + 2][1:-2]) > 1000:
-                        punkty = text[i + 2][1:-2]
-            l_ranking_TEST[nick_index][1] += [punkty]
-            l_ranking_pozycja_TEST[nick_index][1] += [pozycja]
-            pozycja += 1
-
-
 # Aktualizowanie pliku 'Ranking_data' o dane rankingu
 def zaktualizuj_plik(file_name, ranking_data):
-    with open(f"{file_name}", "wb") as fp:  # Pickling
+    with open(f"{file_name}", "wb", encoding="utf-8") as fp:  # Pickling
         pickle.dump(ranking_data, fp)
 
 
@@ -125,7 +95,7 @@ def zaladuj_dane_z_pliku(file_name):
 # Zwraca list? wszystkich wcze?niej wykorzystzanych screenow, pobieranych z pliku 'Screens_used'
 def pobierz_liste_dodanych_screenow():
     lista = []
-    with open("Screens_used", "r") as fp:
+    with open("Screens_used", "r", encoding="utf-8") as fp:
         line = fp.readline()
         while line:
             lista.append(line.strip()[:37])
@@ -133,14 +103,14 @@ def pobierz_liste_dodanych_screenow():
     return lista
 
 
-# Dodawanie do pliku 'Screens_used' nazw screenów które zosta?y ju? przetworzone
+# Dodawanie do pliku 'Screens_used' nazw screen贸w kt贸re zosta?y ju? przetworzone
 def zaktualizuj_liste_dodanych_screenow(img):
-    text_file = open("Screens_used", "a+")
+    text_file = open("Screens_used", "a+", encoding="utf-8")
     text_file.write(f"{img[8:]}\t{datetime.datetime.now()}\n")
     text_file.close()
 
 
-# PRzeszukanie katalogu Screens pod k?tem nowych elementów
+# PRzeszukanie katalogu Screens pod k?tem nowych element贸w
 def sprawdz_nowe_screeny():
     nowe_lista = []
     lista = pobierz_liste_dodanych_screenow()
@@ -151,7 +121,7 @@ def sprawdz_nowe_screeny():
     return nowe_lista
 
 
-# Wy?wietlenie ca??go rankingu dla wszystkich elementow(nicków)
+# Wy?wietlenie ca??go rankingu dla wszystkich elementow(nick贸w)
 def pokaz_liste_ranking():
     i = 0
     while i < len(l_ranking):
@@ -176,7 +146,7 @@ def sprawdz_i_przenies_nowe_screeny():
         print(f"Zostaly dodane {counter} nowe screeny.")
 
 
-def TEST_SHOW_RANKINGS(type=""):
+def TEST_SHOW_RANKINGS(type="",id=""):
     if type == "clearRead":
         # Wy?wietlanie rankingu z pliku => posortowane wed?ug pozycji 1-7
         print("")
@@ -192,7 +162,7 @@ def TEST_SHOW_RANKINGS(type=""):
         for index, item in enumerate(l_nick):
             print('{:.>10}'.format(l_ranking_pozycja[index][0]), end=" ")
             for i, elem in enumerate(l_ranking_pozycja[index][1]):
-                print('{:^2}'.format(l_ranking_pozycja[index][1][i]), end="")
+                print('{:^3}'.format(l_ranking_pozycja[index][1][i]), end="")
             print("")
 
     elif type == "copyReady":
@@ -212,6 +182,15 @@ def TEST_SHOW_RANKINGS(type=""):
                 print('{:}'.format(l_ranking_pozycja[index][1][i]), end=" ")
             print("")
 
+    elif id != "":
+        # Wy?wietlanie rankingu z pliku => posortowane wed?ug pozycji 1-7
+        print("")
+        x = len(l_nick)
+        for index, item in enumerate(l_nick):
+            print('[', '{:>2}'.format(index),']', end=" ")
+            print('{: >10}'.format(l_ranking[index][0]), end=" ")
+            print('{:>5}'.format(l_ranking[index][1][int(id)]), end="\n")
+
     else:
         print(
             "jako parametr podaj <clearRead> jako lanie sformatowane i przejrzyste,\nalbo <copyReady> elementy oddzielone spacjami, \nwystarczy wklejenie specjalne do excela z uwzglednieniem spacjii")
@@ -224,11 +203,12 @@ def wyeksportuj_dane_do_pliku_tekstowego(imgUrl):
     screens_text_data.append(text_podzielony)
     return screens_text_data
 
-# TODO: Kopia zapasowa przed wgraniem nowych screenów, w celu skorygowania b??dów i przywrócenia wczesniejszej wersjii
+
+
 
 sprawdz_i_przenies_nowe_screeny()
 
-# Sprawdzenie które screeny zosta?y ju? wcze?niej zaimportowane
+# Sprawdzenie kt贸re screeny zosta?y ju? wcze?niej zaimportowane
 if pobierz_liste_dodanych_screenow() != []:
     # Pobranie do pami?ci aktualnych danych z pliku
     l_ranking = zaladuj_dane_z_pliku("Ranking_data")
@@ -242,15 +222,13 @@ else:
     count_new_screens = len(sprawdz_nowe_screeny())
 
 # Proces aktualizowania rankingu o nowe screeny, z prostym wskaznikiem post?pu
-
 for i, imgUrl in enumerate(sprawdz_nowe_screeny()):
     print(f"[ PROGRESS : {i}/{count_new_screens} ]")
     updateRanking(getTextFromImage(f"Screens/{imgUrl}"))
     zaktualizuj_plik("Screens_Text_Data", wyeksportuj_dane_do_pliku_tekstowego(f"Screens\\{imgUrl}"))
 
 TEST_SHOW_RANKINGS("clearRead")
-
-'''   
+''' 
 if pobierz_liste_dodanych_screenow() != []:
     for i, elem in enumerate(pobierz_liste_dodanych_screenow()):
         print(f"Uploading file {i+1} of {len(pobierz_liste_dodanych_screenow())}")
@@ -261,9 +239,45 @@ if pobierz_liste_dodanych_screenow() != []:
             print(screens_text_data[i])
             print("")
             i += 1
+
+'''
+for i, elem in enumerate(screens_text_data):
+    try:
+        print('{:>3}'.format(i), elem)
+    except Exception as e:
+        print(e)
+'''
+# Wyswietlenie mojego rankingu
+
+l_moja_pozycja = []
+for i, elem in enumerate(screens_text_data):
+   # print('{:^10}'.format(elem[8][:3]),'{:^10}'.format(elem[9]),'{:^10}'.format(elem[10][:4]) )
+    if str.isdigit(elem[8][:3]):
+        l_moja_pozycja.append(elem[8][:3])
+    else:
+        if str.isdigit(elem[9][:3]):
+            if int(elem[9][:3]) < 200:
+                l_moja_pozycja.append(elem[9][:3])
+        else:
+            l_moja_pozycja.append("")
+
+for elem in l_moja_pozycja:
+    print('{:}'.format(elem), end=" ")
 '''
 
-for i, elem in enumerate(screens_text_data):
-    print('{:>3}'.format(i), elem)
 
-print("END")
+# EDYTOWANIE WARTOSCI NA LISCIE
+# [ V ] Wybranie konkretnej listy.
+# [ V ] Pobranie listy.
+# [ - ] Informacja o nazwie -> data i godzina przechwycenia screena
+# [   ] Iteracja podmieniania danych wprowadzanych rpzez u偶ytkownika.
+# [   ] Zapisanie/podmienienie danych listy do pliku.
+
+odp = input("Czy chcesz zedytowac liste? t/n \n")
+if odp.lower() == "t":
+    id = input("Podaj nr. listy. \n")
+    print("zatwierdzic ? :",screens_text_data[int(id)])
+    print(TEST_SHOW_RANKINGS(id=id))
+    odp = input("Czy chcesz edytowa膰 t膮 kolumne? t/n")
+    if odp.lower() == "t":
+        print("elo xDD")
