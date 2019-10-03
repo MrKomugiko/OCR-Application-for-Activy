@@ -81,7 +81,7 @@ def updateRanking(text):
 
 # Aktualizowanie pliku 'Ranking_data' o dane rankingu
 def zaktualizuj_plik(file_name, ranking_data):
-    with open(f"{file_name}", "wb", encoding="utf-8") as fp:  # Pickling
+    with open(f"{file_name}", "wb") as fp:  # Pickling
         pickle.dump(ranking_data, fp)
 
 
@@ -264,20 +264,36 @@ for i, elem in enumerate(screens_text_data):
 for elem in l_moja_pozycja:
     print('{:}'.format(elem), end=" ")
 '''
-
-
 # EDYTOWANIE WARTOSCI NA LISCIE
 # [ V ] Wybranie konkretnej listy.
 # [ V ] Pobranie listy.
-# [ - ] Informacja o nazwie -> data i godzina przechwycenia screena
-# [   ] Iteracja podmieniania danych wprowadzanych rpzez użytkownika.
-# [   ] Zapisanie/podmienienie danych listy do pliku.
+# [ - ] Informacja edytowanym elemencie -> data i godzina przechwycenia screena
+# [ V ] Iteracja podmieniania danych wprowadzanych rpzez użytkownika.
+# [ V ] Zapisanie/podmienienie danych listy do pliku.
 
 odp = input("Czy chcesz zedytowac liste? t/n \n")
 if odp.lower() == "t":
     id = input("Podaj nr. listy. \n")
-    print("zatwierdzic ? :",screens_text_data[int(id)])
-    print(TEST_SHOW_RANKINGS(id=id))
+    try:
+        print("zatwierdzic ? :",screens_text_data[int(id)])
+    except Exception as e:
+        print("Źródło zawiera niedozwolone znaki, tekst zostanie wyświetlony z ich pominięciem, kod błędu ", e)
+        for i,elem in enumerate(screens_text_data[int(id)]):
+            try:
+                print(elem, end=" ")
+            except:
+                print("[BLĄD]", end=" ")
+    finally:
+        print(TEST_SHOW_RANKINGS(id=id))
+
     odp = input("Czy chcesz edytować tą kolumne? t/n")
     if odp.lower() == "t":
-        print("elo xDD")
+        for i, elem in enumerate(l_ranking[0:len(l_nick)]):
+            print(f"i = {i}")
+            nowePunkty = input(f"nick:[{l_ranking[i][0]}]\tCurrent points:[{l_ranking[i][1][int(id)]}] \tNew points:")
+            if nowePunkty != "":
+                l_ranking[i][1][int(id)]=nowePunkty
+        zaktualizuj_plik("Ranking_data",l_ranking)
+        print("Scucessfully updated.")
+        print(TEST_SHOW_RANKINGS(id=id))
+
