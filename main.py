@@ -1,5 +1,5 @@
 # coding=utf-8
-
+import numpy
 import pytesseract, json, datetime, time, pickle, os, shutil
 from PIL import Image
 
@@ -150,7 +150,13 @@ def TEST_SHOW_RANKINGS(type="",id=""):
     if type == "clearRead":
         # Wy?wietlanie rankingu z pliku => posortowane wed?ug pozycji 1-7
         print("")
-        x = len(l_nick)
+        liczba_dodanych_punktow = len(l_ranking[0][1])
+        i = 0
+        print('{:.>10}'.format("ID"), end=" ")
+        while i < liczba_dodanych_punktow:
+            print('{:>5}'.format(i), end="")
+            i+=1
+        print()
         for index, item in enumerate(l_nick):
             print('{:.>10}'.format(l_ranking[index][0]), end=" ")
             for i, elem in enumerate(l_ranking[index][1]):
@@ -227,7 +233,8 @@ for i, imgUrl in enumerate(sprawdz_nowe_screeny()):
     updateRanking(getTextFromImage(f"Screens/{imgUrl}"))
     zaktualizuj_plik("Screens_Text_Data", wyeksportuj_dane_do_pliku_tekstowego(f"Screens\\{imgUrl}"))
 
-TEST_SHOW_RANKINGS("clearRead")
+
+TEST_SHOW_RANKINGS("copyReady")
 ''' 
 if pobierz_liste_dodanych_screenow() != []:
     for i, elem in enumerate(pobierz_liste_dodanych_screenow()):
@@ -240,7 +247,7 @@ if pobierz_liste_dodanych_screenow() != []:
             print("")
             i += 1
 
-'''
+
 for i, elem in enumerate(screens_text_data):
     try:
         print('{:>3}'.format(i), elem)
@@ -263,11 +270,11 @@ for i, elem in enumerate(screens_text_data):
 
 for elem in l_moja_pozycja:
     print('{:}'.format(elem), end=" ")
-'''
+
+
 # EDYTOWANIE WARTOSCI NA LISCIE
 # [ V ] Wybranie konkretnej listy.
 # [ V ] Pobranie listy.
-# [ - ] Informacja edytowanym elemencie -> data i godzina przechwycenia screena
 # [ V ] Iteracja podmieniania danych wprowadzanych rpzez użytkownika.
 # [ V ] Zapisanie/podmienienie danych listy do pliku.
 
@@ -297,3 +304,23 @@ if odp.lower() == "t":
         print("Scucessfully updated.")
         print(TEST_SHOW_RANKINGS(id=id))
 
+import matplotlib.pyplot as plt
+moj_ranking=[]
+for elem in l_moja_pozycja:
+    if elem == "":
+        continue
+    else:
+        moj_ranking.append(int(elem))
+
+x=range(len(moj_ranking))
+y=moj_ranking
+
+
+# calc the trendline
+z = numpy.polyfit(x, y, 1)
+p = numpy.poly1d(z)
+plt.plot(moj_ranking,'-o')
+plt.plot(x,p(x),"r--")
+# the line equation:
+
+plt.show()
